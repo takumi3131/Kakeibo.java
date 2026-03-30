@@ -213,6 +213,7 @@ public class Main {
 
                                 break;
 
+
                             case 9:
                                 System.out.println("【家計簿アプリ】「ホームに戻ります。」");
                                 System.out.println();
