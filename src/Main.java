@@ -209,6 +209,8 @@ public class Main {
                                 }
                                 System.out.println("【家計簿アプリ】「現在の支出の合計は" + totalExpense + "です」");
                                 System.out.println();
+
+
                                 break;
 
                             case 9:

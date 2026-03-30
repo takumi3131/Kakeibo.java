@@ -10,5 +10,6 @@ public class Transaction {
         this.description = description;
         this.amount = amount;
 
+
     }
 }
