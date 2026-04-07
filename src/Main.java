@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.*;
 public class Main {
     public static void main(String[] args) {
         List<Transaction> expenseList = new ArrayList<>();
@@ -28,6 +29,30 @@ public class Main {
 
             if (choice == 9) {
                 System.out.println("【家計簿アプリ】「またお待ちしております。」");
+                File folder = new File("家計簿データ");
+                if (!folder.exists()) {
+                    folder.mkdir(); // フォルダが無ければ作成
+                }
+                try {
+                    // 支出の保存
+                    PrintWriter pwExpense = new PrintWriter(new FileWriter("家計簿データ/expense.csv"));
+                    for (Transaction item : expenseList) {
+                        pwExpense.println(item.date + "," + item.description + "," + item.amount);
+                    }
+                    pwExpense.close();
+
+                    // 収入の保存
+                    PrintWriter pwIncome = new PrintWriter(new FileWriter("家計簿データ/income.csv"));
+                    for (Transaction item : incomeList) {
+                        pwIncome.println(item.date + "," + item.description + "," + item.amount);
+                    }
+                    pwIncome.close();
+
+                    System.out.println("【家計簿アプリ】「データの保存が完了しました！」");
+
+                } catch (Exception e) {
+                    System.out.println("【家計簿アプリ】「データの保存に失敗しました。」");
+                }
                 break;
             }
 
@@ -106,7 +131,7 @@ public class Main {
                                             }
 
                                             // ③ 番号を指定して削除
-                                            System.out.print("【家計簿アプリ】「削除する番号を入力しましょう」: ");
+                                            System.out.print("【家計簿アプリ】「削除する番号を入力しましょう」(例：１): ");
                                             int deleteTarget = scanner.nextInt();
 
                                             // リストは0始まりなので、入力された番号から1を引いて削除
@@ -138,7 +163,8 @@ public class Main {
                                         totalExpense += item.amount;
                                     }
                                 }
-                                System.out.println("【家計簿アプリ】「現在の支出の合計は" + totalExpense + "です」");
+                                String result = MoneyFormatter.format(totalExpense);
+                                System.out.println("【家計簿アプリ】「現在の支出の合計は" + result + "円です」");
                                 System.out.println();
                                 break;
 
@@ -173,65 +199,96 @@ public class Main {
 
                         switch (subChoice) {
                             case 1:
-                                System.out.print("【家計簿アプリ】「日付を入力しましょう」 (今日の場合は t を入力 / 指定する場合は 2024-03-10):");
-                                String dateInput = scanner.next();
-                                LocalDate date;
-                                if (dateInput.equals("t")|| dateInput.equals("ｔ")) {
-                                    date = LocalDate.now();
-                                } else {
-                                    date = LocalDate.parse(dateInput);
+                            while(true){
+                                try{
+
+                                        System.out.print("【家計簿アプリ】「日付を入力しましょう」 (今日の場合は t を入力 / 指定する場合は 2024-03-10):");
+                                        String dateInput = scanner.next();
+                                        LocalDate date;
+                                        if (dateInput.equals("t")|| dateInput.equals("ｔ")) {
+                                            date = LocalDate.now();
+                                        } else {
+                                            date = LocalDate.parse(dateInput);
+                                        }
+                                        //空の改行処理
+                                        scanner.nextLine();
+
+                                        System.out.print("【家計簿アプリ】「概要を入力してください」 (例: 給料):");
+                                        String descriptionInput = scanner.nextLine();
+                                        System.out.print("【家計簿アプリ】「金額を入力してください」 (例: 200000):");
+                                        int amountInput = scanner.nextInt();
+                                        incomeList.add(new Transaction(date, descriptionInput, amountInput));
+                                        System.out.println("収入を記録しました！");
+                                        System.out.println();
+
+                                        break;
+                                }catch (Exception e){
+                                    System.out.println();
+                                    System.out.println("【家計簿アプリ】「入力形式が間違っています　例に沿った入力をお願い致します。」");
+                                    scanner.nextLine(); // 間違った入力データをクリアしてリセットする
+                                    System.out.println();
                                 }
-                                //空の改行処理
-                                scanner.nextLine();
+                            }
+                            break ;
 
-                                System.out.print("【家計簿アプリ】「概要を入力してください」 (例: 給料):");
-                                String descriptionInput = scanner.nextLine();
-                                System.out.print("【家計簿アプリ】「金額を入力してください」 (例: 200000):");
-                                int amountInput = scanner.nextInt();
-                                incomeList.add(new Transaction(date, descriptionInput, amountInput));
-                                System.out.println("収入を記録しました！");
-                                System.out.println();
-
-                                break;
 
                             case 2:
-                                if (incomeList.isEmpty()) {
-                                    System.out.println("【家計簿アプリ】「申し訳ございません。現在は削除するデータがありません。」");
-                                    System.out.println();
-                                    break ;
-                                } else {
-                                    // ② 現在のリストを番号付きで表示
-                                    for (int i = 0; i < incomeList.size(); i++) {
-                                        Transaction item = incomeList.get(i);
-                                        // (i + 1) で 1番、2番... と表示させる
-                                        System.out.println((i + 1) + "番: " + item.date + " " + item.description + " " + item.amount + "円");
+                                while (true) {
+                                    try {
+                                        if (incomeList.isEmpty()) {
+                                            System.out.println("【家計簿アプリ】「申し訳ございません。現在は削除するデータがありません。」");
+                                            System.out.println();
+                                            break;
+                                        } else {
+                                            // ② 現在のリストを番号付きで表示
+
+                                            for (int i = 0; i < incomeList.size(); i++) {
+                                                Transaction item = incomeList.get(i);
+                                                // (i + 1) で 1番、2番... と表示させる
+                                                System.out.println((i + 1) + "番: " + item.date + " " + item.description + " " + item.amount + "円");
+                                            }
+
+                                            // ③ 番号を指定して削除
+                                            System.out.print("【家計簿アプリ】「削除する番号を入力しましょう」(例：１): ");
+                                            int deleteTarget = scanner.nextInt();
+
+                                            // リストは0始まりなので、入力された番号から1を引いて削除
+                                            incomeList.remove(deleteTarget - 1);
+                                            System.out.println("【家計簿アプリ】「削除が完了しました！」");
+                                            System.out.println();
+                                            break ;
+
+
+                                        }
+                                        }catch(Exception e){
+                                        System.out.println();
+                                        System.out.println("【家計簿アプリ】「入力形式が間違っています　例に沿った入力をお願い致します。」");
+                                        scanner.nextLine(); // 間違った入力データをクリアしてリセットする
+                                        System.out.println();
+
+
                                     }
-
-                                    // ③ 番号を指定して削除
-                                    System.out.print("【家計簿アプリ】「削除する番号を入力しましょう」: ");
-                                    int deleteTarget = scanner.nextInt();
-
-                                    // リストは0始まりなので、入力された番号から1を引いて削除
-                                    incomeList.remove(deleteTarget - 1);
-                                    System.out.println("【家計簿アプリ】「削除が完了しました！」");
-                                    System.out.println();
-
-                                    break;
                                 }
+                                break ;
+
+
+
+
 
 
                             case 3:
-                                int totalExpense = 0;
+                                int totalincome = 0;
                                 if (incomeList.isEmpty()) {
                                     System.out.println("【家計簿アプリ】「申し訳ございません。現在は合計するデータがありません」");
                                     System.out.println();
                                     break;
                                 } else {
                                     for (Transaction item : incomeList) {
-                                        totalExpense += item.amount;
+                                        totalincome += item.amount;
                                     }
                                 }
-                                System.out.println("【家計簿アプリ】「現在の支出の合計は" + totalExpense + "です」");
+                                String result = MoneyFormatter.format(totalincome);
+                                System.out.println("【家計簿アプリ】「現在の収入の合計は" + result + "円です」");
                                 System.out.println();
 
 
@@ -262,11 +319,12 @@ public class Main {
                         balance2 += item.amount;
                     }
                     totalBalance = balance2 - balance;
+                    String result = MoneyFormatter.format(totalBalance);
                     if (totalBalance <= 0) {
-                        System.out.println("【家計簿アプリ】「現在の貯金額は" + totalBalance + "円です」");
+                        System.out.println("【家計簿アプリ】「現在の貯金額は" + result + "円です」");
                         System.out.println("【家計簿アプリ】「現在はあまり貯金ができてないようです、これから頑張っていきましょう！」");
                     } else {
-                        System.out.println("【家計簿アプリ】「現在の貯金額は" + totalBalance + "円です」");
+                        System.out.println("【家計簿アプリ】「現在の貯金額は" + result + "円です」");
                         System.out.println("【家計簿アプリ】「順調に貯金できています！素晴らしいですね！」");
                     }
                     System.out.println();
