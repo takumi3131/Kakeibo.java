@@ -8,10 +8,38 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.*;
+import java.nio.charset.Charset;
 public class Main {
     public static void main(String[] args) {
         List<Transaction> expenseList = new ArrayList<>();
         List<Transaction> incomeList = new ArrayList<>();
+        try {
+            File expenseFile = new File("家計簿データ/expense.csv");
+            if (expenseFile.exists()) { // ファイルが存在する場合のみ読み込む
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(expenseFile), Charset.forName("Shift_JIS")));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] data = line.split(","); // カンマで3つのデータに分割
+
+                    // 分割した文字列をそれぞれの型に変換してリストに戻す
+                    LocalDate date = LocalDate.parse(data[0]);
+                    String desc = data[1];
+                    int amount = Integer.parseInt(data[2]);
+
+                    expenseList.add(new Transaction(date, desc, amount));
+                }
+                br.close();
+            }
+
+            // ※ 収入（income.csv）も全く同じ流れで incomeList に読み込むコードを追加します
+
+            System.out.println("【家計簿アプリ】「前回のデータを読み込みました！」\n");
+
+        } catch (Exception e) {
+            System.out.println("【家計簿アプリ】「データの読み込みに失敗しました。」");
+        }
+
+
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("【家計簿アプリ】「おかえりなさい。今日は何をしましょうか？」");
@@ -35,14 +63,14 @@ public class Main {
                 }
                 try {
                     // 支出の保存
-                    PrintWriter pwExpense = new PrintWriter(new FileWriter("家計簿データ/expense.csv"));
+                    PrintWriter pwExpense = new PrintWriter(new FileWriter("家計簿データ/expense.csv", Charset.forName("Shift_JIS")));
                     for (Transaction item : expenseList) {
                         pwExpense.println(item.date + "," + item.description + "," + item.amount);
                     }
                     pwExpense.close();
 
                     // 収入の保存
-                    PrintWriter pwIncome = new PrintWriter(new FileWriter("家計簿データ/income.csv"));
+                    PrintWriter pwIncome = new PrintWriter(new FileWriter("家計簿データ/income.csv",Charset.forName("Shift_JIS")));
                     for (Transaction item : incomeList) {
                         pwIncome.println(item.date + "," + item.description + "," + item.amount);
                     }
